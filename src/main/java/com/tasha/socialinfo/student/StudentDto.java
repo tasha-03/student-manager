@@ -11,5 +11,6 @@ public record StudentDto (
     String groupCode,
     String createdAt,
     String lastModified,
-    String lastModifiedBy
+    String lastModifiedBy,
+    String lastModifiedByFullName
 ) {}

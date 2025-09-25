@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Login</title>
+    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}">
+    <style>
+        body {
+            display: flex;
+            align-items: center;
+            padding-top: 40px;
+            padding-bottom: 40px;
+            background-color: #f8f9fa;
+            height: 100vh;
+        }
+        .form-signin {
+            max-width: 380px;
+            padding: 15px;
+            margin: auto;
+        }
+    </style>
+</head>
+<body class="text-center">
+<main class="form-signin">
+    <form th:action="@{/login}" method="post">
+        <h1 class="h3 mb-3 fw-normal">Вход в систему</h1>
+        <div class="form-floating mb-3">
+            <input class="form-control" type="text" name="username" id="username" placeholder="Username">
+            <label for="username">Логин</label>
+        </div>
+        <div class="form-floating mb-3">
+            <input class="form-control" type="password" name="password" id="password" placeholder="Password">
+            <label for="password">Пароль</label>
+        </div>
+        <div class="mb-3">
+            <input class="btn btn-primary" type="submit" value="Войти">
+        </div>
+    </form>
+    <div class="alert alert-danger py-2" role="alert" th:if="${param.error}">
+        Неправильный логин или пароль.
+    </div>
+    <div class="alert alert-success py-2" role="alert" th:if="${param.logout}">
+        Вы вышли из системы.
+    </div>
+</main>
+</body>
+</html>

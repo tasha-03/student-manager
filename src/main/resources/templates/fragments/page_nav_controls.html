@@ -1,0 +1,25 @@
+<div th:fragment="page_controls">
+  <ul class="pagination justify-content-center">
+    <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'">
+      <a class="page-link"
+         th:href="@{/students(page=${currentPage - 1}, limit=${limit})}">Previous</a>
+    </li>
+    <li class="page-item" th:if="${totalPages > 0}"
+        th:each="i : ${#numbers.sequence(1, totalPages)}"
+        th:classappend="${currentPage + 1 == i} ? 'active'">
+      <a class="page-link" th:href="@{/students(page=${i - 1}, limit=${limit})}" th:text="${i}"></a>
+    </li>
+    <li class="page-item" th:classappend="${totalPages == 0 || currentPage + 1 == totalPages} ? 'disabled'">
+      <a class="page-link"
+         th:href="@{/students(page=${currentPage + 1}, limit=${limit})}">Next</a>
+    </li>
+  </ul>
+</div>
+
+<div th:fragment="limit_controls" class="d-flex align-items-center">
+  <label for="inputLimit" class="me-2 mb-0">Показать:</label>
+  <input type="number" name="limit" id="inputLimit" min="1"
+         th:value="${limit}" class="form-control form-control-sm me-2"
+         style="width: 80px;" onchange="this.form.submit()"/>
+  <input type="hidden" name="page" th:value="${currentPage}"/>
+</div>

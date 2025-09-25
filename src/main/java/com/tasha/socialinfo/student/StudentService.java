@@ -7,6 +7,7 @@ import com.tasha.socialinfo.user.User;
 import com.tasha.socialinfo.user.UserRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -51,7 +52,8 @@ public class StudentService {
                 student.getGroup().getCode(),
                 FORMATTER.format(student.getCreatedAt().atZone(MOSCOW)),
                 FORMATTER.format(student.getLastModified().atZone(MOSCOW)),
-                student.getLastModifiedBy().getLogin()
+                student.getLastModifiedBy().getLogin(),
+                student.getLastModifiedBy().getName()
         );
     }
 
@@ -59,6 +61,8 @@ public class StudentService {
         return new StudentFieldValueDto(
                 studentFieldValue.getField().getId(),
                 studentFieldValue.getField().getName(),
+                studentFieldValue.getField().getType(),
+                studentFieldValue.getField().getValidValues(),
                 studentFieldValue.getValue()
         );
     }
@@ -74,12 +78,18 @@ public class StudentService {
                 FORMATTER.format(student.getCreatedAt().atZone(MOSCOW)),
                 FORMATTER.format(student.getLastModified().atZone(MOSCOW)),
                 student.getLastModifiedBy().getLogin(),
+                student.getLastModifiedBy().getName(),
                 fields.stream().map(this::toDto).toList()
         );
     }
 
-    public Page<StudentDto> getAllStudents(Pageable pageable) {
-        Page<Student> studentPage = studentRepository.findAll(pageable);
+    public Page<StudentDto> getAllStudents(Pageable pageable, List<Long> fieldIds, List<String> values) {
+        Specification<Student> spec = StudentSpecifications.hasFieldValues(fieldIds, values);
+
+        Page<Student> studentPage = (spec != null)
+                ? studentRepository.findAll(spec, pageable)
+                : studentRepository.findAll(pageable);
+
         return studentPage.map(this::toDto);
     }
 
@@ -126,24 +136,21 @@ public class StudentService {
         existingStudent.setGroup(group);
         existingStudent.setLastModifiedBy(modifiedBy);
 
-        for (StudentFieldValueRequest fieldValue : updatedStudent.fields()) {
-            Field field = fieldRepository.findById(fieldValue.fieldId())
-                    .orElseThrow(() -> new RuntimeException("Field id not found: " + fieldValue.fieldId()));
-            StudentFieldId studentFieldId = new StudentFieldId(existingStudent.getId(), field.getId());
-            StudentFieldValue existingValue = studentFieldValueRepository.findById(studentFieldId)
-                    .orElseThrow(() -> new RuntimeException("Record not found"));
+        List<StudentFieldValue> existingValues = studentFieldValueRepository.findByStudent_Id(existingStudent.getId());
 
+        for (StudentFieldValue value : existingValues) {
+            Field field = fieldRepository.findById(value.getId().getFieldId())
+                    .orElseThrow(() -> new RuntimeException("Field id not found: " + value.getId().getFieldId()));
             if (field.getType() == FieldType.ENUM &&
-                    !(fieldValue.value() == null) &&
-                    !fieldValue.value().isBlank() &&
-                    !field.getValidValues().contains(fieldValue.value())
+                    !(updatedStudent.fields().get(field.getId()) == null) &&
+                    !updatedStudent.fields().get(field.getId()).isBlank() &&
+                    !field.getValidValues().contains(updatedStudent.fields().get(field.getId()))
             ) {
                 throw new RuntimeException("Value not allowed: " +
-                        fieldValue.value() + " not in " +
+                        updatedStudent.fields().get(field.getId()) + " not in " +
                         field.getValidValues().toString());
             }
-
-            existingValue.setValue(fieldValue.value());
+            value.setValue(updatedStudent.fields().getOrDefault(value.getId().getFieldId(), "false"));
         }
 
         existingStudent.setLastModified(Instant.now());

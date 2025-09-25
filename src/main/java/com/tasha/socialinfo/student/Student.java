@@ -1,5 +1,6 @@
 package com.tasha.socialinfo.student;
 
+import com.tasha.socialinfo.field.StudentFieldValue;
 import com.tasha.socialinfo.group.Group;
 import com.tasha.socialinfo.user.User;
 import jakarta.persistence.*;
@@ -8,6 +9,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.List;
 
 @Entity
 @Table(name = "students")
@@ -35,6 +37,9 @@ public class Student {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "last_modified_by")
     private User lastModifiedBy;
+
+    @OneToMany(mappedBy = "student", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private List<StudentFieldValue> fieldValues;
 
     public Student() {}
 
@@ -91,5 +96,13 @@ public class Student {
 
     public void setLastModifiedBy(User lastModifiedBy) {
         this.lastModifiedBy = lastModifiedBy;
+    }
+
+    public List<StudentFieldValue> getFieldValues() {
+        return fieldValues;
+    }
+
+    public void setFieldValues(List<StudentFieldValue> fieldValues) {
+        this.fieldValues = fieldValues;
     }
 }

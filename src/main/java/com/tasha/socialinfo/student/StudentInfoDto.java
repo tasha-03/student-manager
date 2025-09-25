@@ -2,7 +2,6 @@ package com.tasha.socialinfo.student;
 
 import com.tasha.socialinfo.field.StudentFieldValueDto;
 
-import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -15,6 +14,7 @@ public record StudentInfoDto(
     String createdAt,
     String lastModified,
     String lastModifiedBy,
+    String lastModifiedByFullName,
     List<StudentFieldValueDto> fields
 ) {
 }

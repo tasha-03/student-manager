@@ -1,0 +1,12 @@
+body {
+    padding-top: 60px;
+}
+.table-fixed {
+    table-layout: fixed;
+    width: 100%;
+}
+.table-fixed th, .table-fixed td {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}

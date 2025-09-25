@@ -1,0 +1,189 @@
+<div th:fragment="students-filter-canvas">
+  <button class="btn btn-outline-primary mb-3" type="button" 
+          data-bs-toggle="offcanvas" data-bs-target="#students-filter-canvas" 
+          aria-controls="students-filter-canvas">
+    Фильтры
+  </button>
+
+  <div class="offcanvas offcanvas-end" style="width:800px" tabindex="-1" id="students-filter-canvas"
+       aria-labelledby="students-filter-canvas">
+    <div class="offcanvas-header">
+      <h5>Фильтровать студентов</h5>
+      <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+    <div class="offcanvas-body">
+      <div id="filterContainer">
+      </div>
+      <div class="d-flex justify-content-between">
+        <button type="button" class="btn btn-outline-secondary" id="addFilterBtn">+ Добавить фильтр</button>
+        <button type="submit" class="btn btn-primary">Применить</button>
+      </div>
+    </div>
+  </div>
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const container = document.getElementById("filterContainer");
+      const addBtn = document.getElementById("addFilterBtn");
+      const template = document.getElementById("filterTemplate").innerHTML;
+
+      function getSelectedValues() {
+        return Array.from(container.querySelectorAll(".field-select"))
+          .map(select => select.value)
+          .filter(v => v); // ignore empty
+      }
+
+      function updateDisabledOptions() {
+        const selectedValues = getSelectedValues();
+
+        container.querySelectorAll(".field-select").forEach(select => {
+          Array.from(select.options).forEach(option => {
+            if (option.value === "") return;
+            option.disabled = selectedValues.includes(option.value) && select.value !== option.value;
+          });
+        });
+      }
+
+      function getNextAvailableOption() {
+        const firstSelect = container.querySelector(".field-select");
+        const allOptions = Array.from(firstSelect.options).map(opt => opt.value).filter(v => v);
+        const used = getSelectedValues();
+        return allOptions.find(opt => !used.includes(opt)) || "";
+      }
+
+      const createInput = (row) => {
+        const select = row.querySelector(".field-select");
+        select.value = getNextAvailableOption();
+        select.name = "fieldIds[]";
+        const inputContainer = row.querySelector(".input-container");
+
+        const setInput = (prevValue = "") => {
+          inputContainer.innerHTML = "";
+          const type = select.selectedOptions[0].dataset.type;
+          const name = "values[]";
+
+          switch(type) {
+            case "TEXT":
+              const textInput = document.createElement("input");
+              textInput.type = "text";
+              textInput.name = name;
+              textInput.className = "form-control";
+              textInput.value = prevValue;
+              inputContainer.appendChild(textInput);
+              break;
+
+            case "NUMBER":
+              const numInput = document.createElement("input");
+              numInput.type = "number";
+              numInput.name = name;
+              numInput.className = "form-control";
+              numInput.value = prevValue;
+              inputContainer.appendChild(numInput);
+              break;
+
+            case "BOOLEAN":
+              const checkboxOptions = [
+                {
+                  "value": "true",
+                  "text": "Да"
+                },
+                {
+                  "value": "false",
+                  "text": "Нет"
+                }
+              ];
+              const checkbox = document.createElement("select");
+              checkbox.name = name;
+              checkbox.className = "form-select";
+
+              checkboxOptions.forEach(opt => {
+                const o = document.createElement("option");
+                o.value = opt.value;
+                o.textContent = opt.text;
+                checkbox.appendChild(o);
+              })
+              inputContainer.appendChild(checkbox);
+              break;
+
+            case "DATE":
+              const dateInput = document.createElement("input");
+              dateInput.type = "date";
+              dateInput.name = name;
+              dateInput.className = "form-control";
+              dateInput.value = prevValue;
+              inputContainer.appendChild(dateInput);
+              break;
+
+            case "ENUM":
+              let enumOptions = (select.selectedOptions[0].dataset.options || "")
+                    .split(',')
+                    .map(o => o.trim())
+                    .filter(o => o !== "");
+
+              const enumSelect = document.createElement("select");
+              enumSelect.name = name;
+              enumSelect.className = "form-select";
+
+              enumOptions.forEach(opt => {
+                const o = document.createElement("option");
+                o.value = opt;
+                o.textContent = opt;
+                if(opt === prevValue) o.selected = true;
+                enumSelect.appendChild(o);
+              });
+              inputContainer.appendChild(enumSelect);
+              break;
+
+            default:
+              const defaultInput = document.createElement("input");
+              defaultInput.type = "text";
+              defaultInput.name = name;
+              defaultInput.className = "form-control";
+              defaultInput.value = prevValue;
+              inputContainer.appendChild(defaultInput);
+          }
+        };
+
+        select.addEventListener("change", () => setInput(""));
+        setInput(select.dataset.currentValue || "");
+      };
+
+      addBtn.addEventListener("click", () => {
+        const tempDiv = document.createElement("div");
+        tempDiv.innerHTML = template.trim();
+        const newRow = tempDiv.firstChild;
+        container.appendChild(newRow);
+        createInput(newRow);
+        updateDisabledOptions();
+      });
+
+      container.addEventListener("change", (e) => {
+        if (e.target.classList.contains("field-select")) {
+          updateDisabledOptions();
+        }
+      });
+
+      container.addEventListener("click", e => {
+        if(e.target.classList.contains("remove-filter")) {
+          e.target.closest(".filter-row").remove();
+          updateDisabledOptions();
+        }
+      });
+
+      container.querySelectorAll(".filter-row").forEach(createInput);
+    });
+  </script>
+  <div id="filterTemplate" class="d-none">
+    <div class="filter-row mb-3 d-flex align-items-center">
+      <select class="form-select me-2 field-select w-auto">
+        <option th:each="f : ${allFields}"
+                th:value="${f.id}"
+                th:data-type="${f.type}"
+                th:data-options="${#strings.arrayJoin(f.validValues, ',')}"
+                th:text="${f.name}">
+        </option>
+      </select>
+      <div class="input-container me-2 flex-grow-1"></div>
+      <button type="button" class="btn btn-outline-danger remove-filter">✕</button>
+    </div>
+  </div>
+</div>

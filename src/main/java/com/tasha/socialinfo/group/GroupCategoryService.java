@@ -1,21 +1,43 @@
 package com.tasha.socialinfo.group;
 
-import com.tasha.socialinfo.user.UserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Comparator;
 import java.util.List;
 
 @Service
 public class GroupCategoryService {
     private final GroupCategoryRepository categoryRepository;
+    private final GroupRepository groupRepository;
 
-    public GroupCategoryService(GroupCategoryRepository categoryRepository, UserRepository userRepository) {
+    private GroupCategoryDto toDto(GroupCategory category) {
+        return new GroupCategoryDto(
+                category.getId(),
+                category.getName(),
+                groupRepository.findByCategoryId(category.getId())
+        );
+    }
+
+    public GroupCategoryService(
+            GroupCategoryRepository categoryRepository,
+            GroupRepository groupRepository) {
         this.categoryRepository = categoryRepository;
+        this.groupRepository = groupRepository;
     }
 
     public List<GroupCategory> getAllCategories() {
         return categoryRepository.findAll();
+    }
+
+    public List<GroupCategoryDto> getAllCategoriesWithGroups() {
+        List<GroupCategoryDto> categories = new java.util.ArrayList<>(
+                categoryRepository.findAll().stream().map(this::toDto).toList());
+        categories.sort(Comparator.comparing(GroupCategoryDto::categoryName));
+        for (GroupCategoryDto category : categories) {
+            category.groups().sort(Comparator.comparing(Group::getCode));
+        }
+        return categories;
     }
 
     public GroupCategory getCategoryById(Long id) {

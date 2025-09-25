@@ -1,13 +1,11 @@
 package com.tasha.socialinfo.student;
 
-import com.tasha.socialinfo.field.StudentFieldValueRequest;
-
 import java.time.LocalDate;
-import java.util.List;
+import java.util.Map;
 
 public record StudentInfoRequest(
         String name,
         LocalDate birthdate,
         Long groupId,
-        List<StudentFieldValueRequest> fields
+        Map<Long, String> fields
 ) {}

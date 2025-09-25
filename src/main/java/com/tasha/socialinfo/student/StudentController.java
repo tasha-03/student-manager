@@ -1,12 +1,13 @@
 package com.tasha.socialinfo.student;
 
-import com.tasha.socialinfo.field.StudentFieldValueDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -24,10 +25,14 @@ public class StudentController {
     @GetMapping
     public ResponseEntity<Page<StudentDto>> getAllStudents(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "5") int limit
+            @RequestParam(defaultValue = "5") int limit,
+            @RequestParam(required = false) List<Long> fieldIds,
+            @RequestParam(required = false) List<String> values
     ) {
+
         Pageable pageable = PageRequest.of(page, limit);
-        Page<StudentDto> students = studentService.getAllStudents(pageable);
+        Page<StudentDto> students = studentService.getAllStudents(pageable, fieldIds, values);
+
         return ResponseEntity.ok(students);
     }
 

@@ -45,6 +45,10 @@ public class GroupService {
                 .orElseThrow(() -> new RuntimeException("Group not found"));
     }
 
+    public List<Group> getGroupsByCategoryId(Long categoryId) {
+        return groupRepository.findByCategoryId(categoryId);
+    }
+
     @Transactional
     public GroupDto createGroup(GroupRequest group) {
         GroupCategory category = categoryRepository.findById(group.categoryId())
