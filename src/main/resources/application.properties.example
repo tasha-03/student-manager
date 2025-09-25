@@ -3,8 +3,8 @@ spring.application.name=socialinfo
 jwt.secret="very-important-secret-key-12345678901"
 jwt.expiration=3600000
 
-admin.login="admin"
-admin.password="admin123"
+admin.login=admin
+admin.password=admin123
 
 spring.datasource.url=jdbc:mysql://127.0.0.1:3306/social-info-db
 spring.datasource.username=root

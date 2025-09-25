@@ -39,9 +39,6 @@ public class StudentWebController {
             @RequestParam(required = false) List<String> values,
             Model model) {
 
-        System.out.println(fieldIds);
-        System.out.println(values);
-
         Pageable pageable = PageRequest.of(page, limit);
         Page<StudentDto> students = studentService.getAllStudents(pageable, fieldIds, values);
         List<GroupCategoryDto> categories = groupCategoryService.getAllCategoriesWithGroups();
