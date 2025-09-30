@@ -21,6 +21,9 @@ public class Field {
     @Column(name = "value")
     private List<String> validValues;
 
+    @OneToMany(mappedBy = "field", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private List<StudentFieldValue> fieldValues;
+
     public Field() {
     }
 

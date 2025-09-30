@@ -29,8 +29,8 @@
         </div>
         <div class="form-floating mb-3">
             <select class="form-select" name="groupId" id="group">
+                <option value="">--Выберите группу--</option>
                 <optgroup th:each="category : ${categories}" th:label="${category.categoryName}">
-                    <option value="">--Выберите группу--</option>
                     <option th:each="group : ${category.groups}" th:value="${group.id}"
                             th:text="${group.code}" th:selected="${group.id == student.groupId}"></option>
                 </optgroup>
@@ -57,7 +57,7 @@
             <!-- DATE -->
             <input class="form-control" type="date" th:if="${field.fieldType.name() == 'DATE'}"
                    th:name="${'fields[' + field.fieldId + ']'}" th:id="${'fields[' + field.fieldId + ']'}"
-                   th:value="field.value">
+                   th:value="${field.value}">
             <!-- ENUM -->
             <select class="form-select" th:if="${field.fieldType.name() == 'ENUM'}"
                     th:name="${'fields[' + field.fieldId + ']'}" th:id="${'fields[' + field.fieldId + ']'}">

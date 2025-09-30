@@ -72,7 +72,7 @@ public class StudentWebController {
             @ModelAttribute StudentInfoRequest student,
             Authentication authentication,
             Model model) {
-
+        System.out.println(student);
         studentService.updateStudent(id, student, authentication.getName());
         return "redirect:/students";
     }
