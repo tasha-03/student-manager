@@ -1,6 +1,8 @@
 package com.tasha.socialinfo.group;
 
 import com.tasha.socialinfo.spreadsheet.SpreadsheetReader;
+import com.tasha.socialinfo.student.Student;
+import com.tasha.socialinfo.student.StudentRepository;
 import com.tasha.socialinfo.user.User;
 import com.tasha.socialinfo.user.UserRepository;
 import org.springframework.stereotype.Service;
@@ -12,14 +14,21 @@ import java.util.stream.Collectors;
 
 @Service
 public class GroupService {
+    private String defaultGroupCode = "Группа без категории";
     private final GroupRepository groupRepository;
     private final GroupCategoryRepository categoryRepository;
     private final UserRepository userRepository;
+    private final StudentRepository studentRepository;
 
-    public GroupService(GroupRepository groupRepository, GroupCategoryRepository categoryRepository, UserRepository userRepository) {
+    public GroupService(GroupRepository groupRepository, GroupCategoryRepository categoryRepository, UserRepository userRepository, StudentRepository studentRepository) {
         this.groupRepository = groupRepository;
         this.categoryRepository = categoryRepository;
         this.userRepository = userRepository;
+        this.studentRepository = studentRepository;
+    }
+
+    public String getDefaultGroupCode() {
+        return defaultGroupCode;
     }
 
     private GroupDto toDto(Group group) {
@@ -80,9 +89,14 @@ public class GroupService {
 
     @Transactional
     public void deleteGroup(Long id) {
-        if (!groupRepository.existsById(id)) {
-            throw new RuntimeException("Group not found");
+        Group group = groupRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Group not found"));
+        List<Student> students = studentRepository.findByGroupId(group.getId());
+
+        for (Student s : students) {
+            s.setGroup(null);
         }
+
         groupRepository.deleteById(id);
     }
 

@@ -8,8 +8,13 @@ import java.util.List;
 
 @Service
 public class GroupCategoryService {
+    private String defaultCategoryName = "Без категории";
     private final GroupCategoryRepository categoryRepository;
     private final GroupRepository groupRepository;
+
+    public String getDefaultCategoryName() {
+        return defaultCategoryName;
+    }
 
     private GroupCategoryDto toDto(GroupCategory category) {
         return new GroupCategoryDto(
@@ -27,7 +32,8 @@ public class GroupCategoryService {
     }
 
     public List<GroupCategory> getAllCategories() {
-        return categoryRepository.findAll();
+        List<GroupCategory> categories = categoryRepository.findAll();
+        return categories;
     }
 
     public List<GroupCategoryDto> getAllCategoriesWithGroups() {
@@ -62,9 +68,17 @@ public class GroupCategoryService {
 
     @Transactional
     public void deleteCategory(Long id) {
-        if (!categoryRepository.existsById(id)) {
-            throw new RuntimeException("Group category not found");
+        GroupCategory category = categoryRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Group category not found"));
+
+        GroupCategory defaultCategory = categoryRepository.findByName(defaultCategoryName)
+                .orElseThrow(() -> new RuntimeException("Default category not initialized"));
+
+        List<Group> groups = groupRepository.findByCategoryId(category.getId());
+        for (Group g : groups) {
+            g.setCategory(defaultCategory);
         }
+
         categoryRepository.deleteById(id);
     }
 }

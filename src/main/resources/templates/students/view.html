@@ -30,6 +30,7 @@
         <div class="form-floating mb-3">
             <select class="form-select" name="groupId" id="group">
                 <optgroup th:each="category : ${categories}" th:label="${category.categoryName}">
+                    <option value="">--Выберите группу--</option>
                     <option th:each="group : ${category.groups}" th:value="${group.id}"
                             th:text="${group.code}" th:selected="${group.id == student.groupId}"></option>
                 </optgroup>
@@ -60,7 +61,7 @@
             <!-- ENUM -->
             <select class="form-select" th:if="${field.fieldType.name() == 'ENUM'}"
                     th:name="${'fields[' + field.fieldId + ']'}" th:id="${'fields[' + field.fieldId + ']'}">
-                <option value="">--Not selected--</option>
+                <option value="">--Не выбрано--</option>
                 <option th:each="validValue : ${field.validValues}"
                         th:value="${validValue}"
                         th:text="${validValue}"

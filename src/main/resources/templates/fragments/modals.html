@@ -1,3 +1,4 @@
+<!-- New student modal form -->
 <div th:fragment="create-student-modal">
   <script th:src="@{/js/bootstrap.bundle.min.js}"></script>
   <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#create-student-modal">
@@ -25,7 +26,7 @@
                 <label for="birthdate">Дата рождения</label>
               </div>
               <div class="form-floating">
-                <select class="form-select" name="groupId" id="group">
+                <select class="form-select" name="groupId" id="group" required>
                   <option value="">--Выберите группу--</option>
                   <optgroup th:each="category : ${categories}" th:label="${category.categoryName}">
                     <option th:each="group : ${category.groups}" th:value="${group.id}" th:text="${group.code}"></option>
@@ -33,6 +34,120 @@
                 </select>
                 <label class="select-label" for="group">Группа</label>
               </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+            <button type="submit" class="btn btn-primary">Добавить</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- New group modal form -->
+<div th:fragment="create-group-modal">
+  <script th:src="@{/js/bootstrap.bundle.min.js}"></script>
+  <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#create-group-modal">
+    + Добавить группу
+  </button>
+  <div class="modal fade" id="create-group-modal" tabindex="-1"
+       aria-labelledby="create-group-modal-label" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="create-group-modal-label">Добавить группу</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+        </div>
+        <form th:action="@{/groups/new}" method="post">
+          <div class="modal-body">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+            <div class="form-floating mb-3">
+              <input class="form-control" type="text" name="code" id="code"
+                     placeholder="Код группы" required>
+              <label for="code">Код группы</label>
+            </div>
+            <div class="form-floating">
+              <select class="form-select" name="categoryId" id="category" required>
+                <option value="">--Выберите направление--</option>
+                  <option th:each="category : ${categories}" th:value="${category.id}" th:text="${category.name}"></option>
+              </select>
+              <label class="select-label" for="category">Группа</label>
+            </div>
+            <div class="form-floating">
+              <select class="form-select" name="curatorId" id="curator" required>
+                <option value="">--Выберите куратора--</option>
+                <option th:each="curator : ${curators}" th:value="${curator.id}" th:text="${curator.name}"></option>
+              </select>
+              <label class="select-label" for="curator">Группа</label>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+            <button type="submit" class="btn btn-primary">Добавить</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- New group category modal -->
+<div th:fragment="create-group-category-modal">
+  <script th:src="@{/js/bootstrap.bundle.min.js}"></script>
+  <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#create-group-category-modal">
+    + Добавить направление
+  </button>
+  <div class="modal fade" id="create-group-category-modal" tabindex="-1"
+       aria-labelledby="create-group-category-modal-label" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="create-group-category-modal-label">Добавить направление</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+        </div>
+        <form th:action="@{/groups/categories/new}" method="post">
+          <div class="modal-body">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+            <div class="form-floating mb-3">
+              <input class="form-control" type="text" name="name" id="categoryName"
+                     placeholder="Код группы" required>
+              <label for="categoryName">Код группы</label>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+            <button type="submit" class="btn btn-primary">Добавить</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Edit group category modal -->
+<div th:fragment="save-group-category-modal(category)">
+  <script th:src="@{/js/bootstrap.bundle.min.js}"></script>
+  <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#save-group-category-modal">
+    + Переименовать
+  </button>
+  <div class="modal fade" id="save-group-category-modal" tabindex="-1"
+       aria-labelledby="save-group-category-modal-label" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="save-group-category-modal-label">Переименовать направление</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+        </div>
+        <form th:action="${'groups/categories/' + category.id}" method="post">
+          <div class="modal-body">
+            <input type="hidden" name="id" th:value="${category.id}">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+            <div class="form-floating mb-3">
+              <input class="form-control" type="text" name="name" id="categoryName"
+                     placeholder="Код группы" th:value="${category.name}" required>
+              <label for="categoryName">Код группы</label>
+            </div>
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>

@@ -1,19 +1,15 @@
 package com.tasha.socialinfo.student;
 
 import com.tasha.socialinfo.field.Field;
-import com.tasha.socialinfo.field.FieldRepository;
 import com.tasha.socialinfo.field.FieldService;
 import com.tasha.socialinfo.group.GroupCategoryDto;
 import com.tasha.socialinfo.group.GroupCategoryService;
-import com.tasha.socialinfo.group.GroupService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -25,7 +21,9 @@ public class StudentWebController {
     private final GroupCategoryService groupCategoryService;
     private final FieldService fieldService;
 
-    public StudentWebController(StudentService studentService, GroupService groupService, GroupCategoryService groupCategoryService, FieldRepository fieldRepository, FieldService fieldService) {
+    public StudentWebController(StudentService studentService,
+                                GroupCategoryService groupCategoryService,
+                                FieldService fieldService) {
         this.studentService = studentService;
         this.groupCategoryService = groupCategoryService;
         this.fieldService = fieldService;
@@ -42,6 +40,7 @@ public class StudentWebController {
         Pageable pageable = PageRequest.of(page, limit);
         Page<StudentDto> students = studentService.getAllStudents(pageable, fieldIds, values);
         List<GroupCategoryDto> categories = groupCategoryService.getAllCategoriesWithGroups();
+        categories.removeIf(cat -> cat.categoryName().equals(groupCategoryService.getDefaultCategoryName()));
         List<Field> fields = fieldService.getAllFields();
 
         model.addAttribute("allFields", fields);
@@ -61,6 +60,7 @@ public class StudentWebController {
     public String viewStudent(@PathVariable Long id, Model model) {
         StudentInfoDto student = studentService.getStudentById(id);
         List<GroupCategoryDto> categories = groupCategoryService.getAllCategoriesWithGroups();
+        categories.removeIf(cat -> cat.categoryName().equals(groupCategoryService.getDefaultCategoryName()));
         model.addAttribute("student", student);
         model.addAttribute("categories", categories);
         return "students/view";
@@ -74,6 +74,12 @@ public class StudentWebController {
             Model model) {
 
         studentService.updateStudent(id, student, authentication.getName());
+        return "redirect:/students";
+    }
+
+    @GetMapping("/{id}/deet")
+    public String deleteStudent(@PathVariable Long id) {
+        studentService.deleteStudent(id);
         return "redirect:/students";
     }
 

@@ -9,4 +9,5 @@ import java.util.List;
 public interface GroupRepository extends JpaRepository<Group, Long> {
     boolean existsByCode(String code);
     List<Group> findByCategoryId(Long categoryId);
+    List<Group> findByCuratorId(Long curatorId);
 }

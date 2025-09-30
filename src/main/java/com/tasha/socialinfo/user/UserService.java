@@ -1,5 +1,8 @@
 package com.tasha.socialinfo.user;
 
+import com.tasha.socialinfo.group.Group;
+import com.tasha.socialinfo.group.GroupRepository;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -8,16 +11,31 @@ import java.util.List;
 
 @Service
 public class UserService {
+    private @Value("${admin.login}") String adminLogin;
     private final UserRepository userRepository;
+    private final GroupRepository groupRepository;
     private final PasswordEncoder passwordEncoder;
 
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    private UserDto toDto(User user) {
+        return new UserDto(
+                user.getId(),
+                user.getLogin(),
+                user.getName()
+        );
+    }
+
+    public UserService(UserRepository userRepository, GroupRepository groupRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
+        this.groupRepository = groupRepository;
         this.passwordEncoder = passwordEncoder;
     }
 
     public List<User> getAllUsers() {
         return userRepository.findAll();
+    }
+
+    public List<UserDto> getCurators() {
+        return userRepository.findAll().stream().map(this::toDto).toList();
     }
 
     public User getUserById(Long id) {
@@ -58,9 +76,17 @@ public class UserService {
 
     @Transactional
     public void deleteUser(Long id) {
-        if (!userRepository.existsById(id)) {
-            throw new RuntimeException("User not found");
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        User admin = userRepository.findByLogin(adminLogin)
+                .orElseThrow(() -> new RuntimeException("Admin user not initialized"));
+
+        List<Group> groups = groupRepository.findByCuratorId(user.getId());
+
+        for (Group g : groups) {
+            g.setCurator(admin);
         }
+
         userRepository.deleteById(id);
     }
 }
