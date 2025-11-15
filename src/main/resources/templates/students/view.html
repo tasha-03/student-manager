@@ -28,7 +28,7 @@
             <label for="name">Дата рождения</label>
         </div>
         <div class="form-floating mb-3">
-            <select class="form-select" name="groupId" id="group">
+            <select class="form-select" name="groupId" id="group" th:disabled="${!#authorization.expression('hasRole(''ADMIN'')')}">
                 <option value="">--Выберите группу--</option>
                 <optgroup th:each="category : ${categories}" th:label="${category.categoryName}">
                     <option th:each="group : ${category.groups}" th:value="${group.id}"
@@ -37,6 +37,7 @@
             </select>
             <label for="group">Группа</label>
         </div>
+        <input type="hidden" name="groupId" th:value="${student.groupId}" sec:authorize="hasAnyRole('USER','SOCIAL')">
         <div class="mb-3"
              th:classappend="${field.fieldType.name() == 'BOOLEAN'} ? 'form-check' : 'form-floating'"
              th:each="field : ${student.fields}">
