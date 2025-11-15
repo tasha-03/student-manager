@@ -61,4 +61,8 @@ public class Field {
     public void setValidValues(List<String> validValues) {
         this.validValues = validValues;
     }
+
+    public List<StudentFieldValue> getFieldValues() {
+        return fieldValues;
+    }
 }

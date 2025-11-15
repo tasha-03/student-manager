@@ -1,11 +1,21 @@
 package com.tasha.socialinfo.student;
 
+import com.tasha.socialinfo.group.Group;
+import com.tasha.socialinfo.user.User;
 import jakarta.persistence.criteria.Join;
 import org.springframework.data.jpa.domain.Specification;
 
 import java.util.List;
 
 public class StudentSpecifications {
+    public static Specification<Student> belongsToCurator(User curator) {
+        return (root, query, cb) -> cb.equal(root.get("group").get("curator"), curator);
+    }
+
+    public static Specification<Student> belongsToGroup(Group group) {
+        return (root, query, cb) -> cb.equal(root.get("group"), group);
+    }
+
     public static Specification<Student> hasFieldValue(Long fieldId, String value) {
         return (root, query, cb) -> {
             Join<Object, Object> join = root.join("fieldValues");

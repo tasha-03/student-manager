@@ -1,7 +1,10 @@
 package com.tasha.socialinfo.group;
 
+import com.tasha.socialinfo.student.Student;
 import com.tasha.socialinfo.user.User;
 import jakarta.persistence.*;
+
+import java.util.List;
 
 @Entity
 @Table(name = "student_groups")
@@ -20,6 +23,9 @@ public class Group {
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
     @JoinColumn(name = "curator_id")
     private User curator;
+
+    @OneToMany(mappedBy = "group", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private List<Student> students;
 
     public Group() {
     }
@@ -56,5 +62,9 @@ public class Group {
 
     public void setCurator(User curator) {
         this.curator = curator;
+    }
+
+    public List<Student> getStudents() {
+        return students;
     }
 }

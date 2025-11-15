@@ -78,8 +78,13 @@ public class UserService {
     public void deleteUser(Long id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found"));
+
+        if (user.getLogin().equals(adminLogin)) {
+            throw new RuntimeException("Cannot delete admin user");
+        }
+
         User admin = userRepository.findByLogin(adminLogin)
-                .orElseThrow(() -> new RuntimeException("Admin user not initialized"));
+                .orElseThrow(() -> new RuntimeException("Admin user has not been initialized"));
 
         List<Group> groups = groupRepository.findByCuratorId(user.getId());
 

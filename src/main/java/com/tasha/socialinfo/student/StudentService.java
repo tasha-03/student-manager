@@ -3,11 +3,14 @@ package com.tasha.socialinfo.student;
 import com.tasha.socialinfo.field.*;
 import com.tasha.socialinfo.group.Group;
 import com.tasha.socialinfo.group.GroupRepository;
+import com.tasha.socialinfo.security.Role;
+import com.tasha.socialinfo.spreadsheet.SpreadsheetWriter;
 import com.tasha.socialinfo.user.User;
 import com.tasha.socialinfo.user.UserRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -83,20 +86,65 @@ public class StudentService {
         );
     }
 
-    public Page<StudentDto> getAllStudents(Pageable pageable, List<Long> fieldIds, List<String> values) {
+    public Page<StudentDto> getAllStudents(Pageable pageable, List<Long> fieldIds, List<String> values, Long groupId) {
         Specification<Student> spec = StudentSpecifications.hasFieldValues(fieldIds, values);
+        Specification<Student> groupSpec = groupId != null
+                ? StudentSpecifications.belongsToGroup(groupRepository.findById(groupId)
+                        .orElseThrow(() -> new RuntimeException("Group not found")))
+                : null;
 
-        Page<Student> studentPage = (spec != null)
-                ? studentRepository.findAll(spec, pageable)
+        Specification<Student> finalSpec = (spec != null)
+                ? spec.and(groupSpec)
+                : groupSpec;
+
+        Page<Student> studentPage = (finalSpec != null)
+                ? studentRepository.findAll(finalSpec, pageable)
                 : studentRepository.findAll(pageable);
 
         return studentPage.map(this::toDto);
     }
 
+    public Page<StudentDto> getMyStudents(Pageable pageable, List<Long> fieldIds, List<String> values, Long groupId) {
+        Specification<Student> spec = StudentSpecifications.hasFieldValues(fieldIds, values);
+
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        User curator = userRepository.findByLogin(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        Specification<Student> curatorSpec = StudentSpecifications.belongsToCurator(curator);
+
+        Specification<Student> groupSpec = groupId != null
+                ? StudentSpecifications.belongsToGroup(groupRepository.findById(groupId)
+                .orElseThrow(() -> new RuntimeException("Group not found")))
+                : null;
+
+        Specification<Student> finalSpec = (spec != null)
+                ? spec.and(curatorSpec)
+                : curatorSpec;
+
+        finalSpec = (groupSpec != null)
+                ? groupSpec.and(finalSpec)
+                : finalSpec;
+
+        Page<Student> studentPage = studentRepository.findAll(finalSpec, pageable);
+
+        return studentPage.map(this::toDto);
+    }
+
     @Transactional
-    public StudentInfoDto getStudentById(Long studentId) {
+    public StudentInfoDto getStudentById(Long studentId, String login) {
+        User user = userRepository.findByLogin(login)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
         Student student = studentRepository.findById(studentId)
                 .orElseThrow(() -> new RuntimeException("Student not found"));
+
+        if (user.getRole() != Role.ROLE_ADMIN && user.getRole() != Role.ROLE_SOCIAL) {
+            if (student.getGroup().getCurator() != user) {
+                throw new RuntimeException("Student not found");
+            }
+        }
+
         List<Field> fields = fieldRepository.findAll();
 
 
@@ -185,5 +233,13 @@ public class StudentService {
     public void deleteStudentBatch(List<Long> studentIds) {
         studentFieldValueRepository.deleteAllByStudentIds(studentIds);
         studentRepository.deleteAllByIdInBatch(studentIds);
+    }
+
+    public byte[] getExcel() {
+        List<StudentInfoDto> students = studentRepository.findAll().stream().map(this::toInfoDto).toList();
+        List<String> header = StudentExporter.buildHeader(students);
+        List<List<String>> rows = StudentExporter.buildRows(students);
+
+        return SpreadsheetWriter.writeExcel(rows, header);
     }
 }

@@ -2,6 +2,7 @@ package com.tasha.socialinfo.group;
 
 import com.tasha.socialinfo.user.UserDto;
 import com.tasha.socialinfo.user.UserService;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -10,6 +11,7 @@ import java.util.List;
 
 @Controller
 @RequestMapping("/groups")
+@PreAuthorize("hasAuthority('ROLE_ADMIN')")
 public class GroupWebController {
     private final GroupService groupService;
     private final GroupCategoryService categoryService;
@@ -58,6 +60,7 @@ public class GroupWebController {
             @PathVariable Long id,
             @ModelAttribute GroupRequest group
     ) {
+
         groupService.updateGroup(id, group);
         return "redirect:/groups";
     }

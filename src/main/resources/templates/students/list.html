@@ -5,34 +5,49 @@
     <title>Students</title>
     <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}">
     <link rel="stylesheet" th:href="@{/css/styles.css}">
+    <script th:src="@{/js/bootstrap.bundle.min.js}"></script>
 </head>
 <body>
 <div th:replace="~{fragments/layout :: app-nav}"></div>
-<div class="container">
+<div class="container mt-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1 class="h3">Студенты</h1>
-        <div th:replace="~{fragments/modals :: create-student-modal}"></div>
+        <div class="d-flex justify-content-between align-items-center gap-4" sec:authorize="hasAnyRole('ADMIN','SOCIAL')">
+            <div th:replace="~{fragments/modals :: create-student-modal}" sec:authorize="hasAnyRole('ADMIN')"></div>
+            <form th:action="@{'/students/export'}" method="get"><button class="btn btn-outline-primary">Скачать XLSX</button></form>
+        </div>
     </div>
     <form method="get" action="#">
+
         <div class="d-flex justify-content-between align-items-center mb-4">
             <div th:replace="~{fragments/page_nav_controls :: limit_controls}" ></div>
             <div th:replace="~{fragments/students_filter :: students-filter-canvas}"></div>
         </div>
-        <div th:replace="~{fragments/page_nav_controls :: page_controls}" ></div>
+        <div th:replace="~{fragments/page_nav_controls :: page_controls('/students')}" ></div>
+        <div th:replace="~{fragments/modals :: transfer-students-modal}" sec:authorize="hasAnyRole('ADMIN')"></div>
         <div class="table-responsive">
             <table class="table table-striped table-hover align-middle table-fixed">
                 <thead>
                     <tr>
-                        <th style="width: 10%">Select</th>
-                        <th style="width: 35%">ФИО</th>
+                        <th style="width: 10%" sec:authorize="hasAnyRole('ADMIN')">
+                            <input type="checkbox" id="check-all-records">
+                        </th>
+                        <th style="width: 25%">ФИО</th>
                         <th style="width: 10%">Дата рождения</th>
-                        <th style="width: 10%">Группа</th>
+                        <th style="width: 20%">
+                            <select class="form-select" name="searchGroupId" id="group" onchange="this.form.submit()">
+                                <option value="">--Выберите группу--</option>
+                                <optgroup th:each="category : ${categories}" th:label="${category.categoryName}">
+                                    <option th:each="group : ${category.groups}" th:value="${group.id}" th:text="${group.code}"></option>
+                                </optgroup>
+                            </select>
+                        </th>
                         <th style="width: 35%">Изменено</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr th:each="student : ${students}">
-                        <td><input type="checkbox" name="selected" th:value="${student.id}"></td>
+                    <tr th:each="student : ${students}" role="row">
+                        <td sec:authorize="hasAnyRole('ADMIN')"><input type="checkbox" class="record-checkbox" name="studentIds" th:value="${student.id}"></td>
                         <td><a th:href="${'/students/' + student.id}" th:text="${student.name}"></a></td>
                         <td th:text="${#temporals.format(student.birthdate, 'dd.MM.yyyy')}"></td>
                         <td th:text="${student.groupCode}"></td>
@@ -44,8 +59,66 @@
                 </tbody>
             </table>
         </div>
-        <div th:replace="~{fragments/page_nav_controls :: page_controls}" ></div>
+        <div th:replace="~{fragments/page_nav_controls :: page_controls('/students')}" ></div>
     </form>
 </div>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        let selectAllCheckbox = document.querySelector('#check-all-records');
+        let checkboxes = document.querySelectorAll('.record-checkbox');
+        let changeGroupButton = document.querySelector('[data-bs-target="#transfer-students-modal"]');
+
+        document.querySelectorAll('tr[role="row"]').forEach(row => {
+            row.addEventListener('click', function() {
+                if (event.target.type === 'checkbox') {
+                    return;
+                }
+
+                const checkbox = this.querySelector('input[type="checkbox"]');
+                checkbox.checked = !checkbox.checked;
+                setIndeteminateMasterCheckbox()
+            });
+        });
+
+        function toggleCheckboxes(source) {
+            checkboxes.forEach(function(checkbox) {
+                checkbox.checked = source.checked;
+            });
+        }
+
+        function setIndeteminateMasterCheckbox() {
+            if (!selectAllCheckbox.indeterminate) {
+                selectAllCheckbox.indeterminate = true
+                changeGroupButton.disabled = false;
+                return
+            }
+            let record_count = document.querySelectorAll('.record-checkbox').length;
+            let checked_count = document.querySelectorAll('.record-checkbox:checked').length;
+            if (checked_count == record_count) {
+                selectAllCheckbox.indeterminate = false
+                selectAllCheckbox.checked = true
+                changeGroupButton.disabled = false
+            } else if (checked_count == 0) {
+                selectAllCheckbox.indeterminate = false
+                selectAllCheckbox.checked = false
+                changeGroupButton.disabled = true
+            }
+        };
+
+        checkboxes.forEach(function(checkbox) {
+            checkbox.addEventListener("click", function () {
+                event.stopPropagation();
+                setIndeteminateMasterCheckbox()
+            })
+        });
+
+        if (selectAllCheckbox) {
+            selectAllCheckbox.addEventListener('click', function () {
+                toggleCheckboxes(this);
+                changeGroupButton.disabled = !changeGroupButton.disabled;
+            });
+        }
+    });
+</script>
 </body>
 </html>

@@ -1,17 +1,17 @@
-<div th:fragment="page_controls">
+<div th:fragment="page_controls(url)">
   <ul class="pagination justify-content-center">
     <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'">
       <a class="page-link"
-         th:href="@{/students(page=${currentPage - 1}, limit=${limit})}">Previous</a>
+         th:href="@{${url}(page=${currentPage - 1}, limit=${limit})}">Previous</a>
     </li>
     <li class="page-item" th:if="${totalPages > 0}"
         th:each="i : ${#numbers.sequence(1, totalPages)}"
         th:classappend="${currentPage + 1 == i} ? 'active'">
-      <a class="page-link" th:href="@{/students(page=${i - 1}, limit=${limit})}" th:text="${i}"></a>
+      <a class="page-link" th:href="@{${url}(page=${i - 1}, limit=${limit})}" th:text="${i}"></a>
     </li>
     <li class="page-item" th:classappend="${totalPages == 0 || currentPage + 1 == totalPages} ? 'disabled'">
       <a class="page-link"
-         th:href="@{/students(page=${currentPage + 1}, limit=${limit})}">Next</a>
+         th:href="@{${url}(page=${currentPage + 1}, limit=${limit})}">Next</a>
     </li>
   </ul>
 </div>

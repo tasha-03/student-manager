@@ -5,10 +5,16 @@
   <title>Fields</title>
   <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}">
   <link rel="stylesheet" th:href="@{/css/styles.css}">
+  <script th:src="@{/js/bootstrap.bundle.min.js}"></script>
 </head>
 <body>
+<div th:if="${errorMessage}"
+     class="alert alert-danger alert-dismissable fade show" role="alert">
+  <span th:text="${errorMessage}"></span>
+  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Закрыть"></button>
+</div>
 <div th:replace="~{fragments/layout :: app-nav}"></div>
-<div class="container">
+<div class="container mt-4">
   <div class="d-flex justify-content-between align-items-center mb-4">
     <h1 class="h3">Настроить поля</h1>
     <div th:replace="~{fragments/modals :: create-field-modal}"></div>
@@ -64,10 +70,9 @@
           </td>
           <td>
             <!-- change to opening a delete confirmation modal -->
-            <button class="btn btn-danger btn-sm ms-3"
-                    th:formaction="${'/fields/' + field.id + '/delete'}"
-                    formmethod="post"
-                    aria-label="Удалить">x</button>
+            <form action="" method="get">
+              <div th:replace="~{fragments/modals :: confirm-delete-modal('/fields/' + ${field.id}, false, ${field.id})}"></div>
+            </form>
           </td>
         </tr>
         </tbody>
