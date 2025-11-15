@@ -64,8 +64,8 @@
         <td style="width:30%">
           <div class="d-flex justify-content-between">
             <div th:replace="~{fragments/modals :: save-group-category-modal(${category})}"></div>
-            <form th:action="${'/groups/categories/' + category.id + '/delete'}" method="post">
-              <button class="btn btn-danger btn-sm ms-1" aria-label="Удалить">x</button>
+            <form th:action="${'/groups/categories/' + category.id + '/delete'}" method="get">
+              <div th:replace="~{fragments/modals :: confirm-delete-modal('/groups/categories/' + ${category.id}, false, ${category.id})}"></div>
             </form>
           </div>
         </td>
