@@ -62,6 +62,7 @@ public class StudentWebController {
         model.addAttribute("currentPage", page);
         model.addAttribute("totalPages", students.getTotalPages());
         model.addAttribute("limit", limit);
+        model.addAttribute("searchGroupId", searchGroupId);
         model.addAttribute("categories", categories);
         model.addAttribute("fieldIds", fieldIds);
         model.addAttribute("values", values);
