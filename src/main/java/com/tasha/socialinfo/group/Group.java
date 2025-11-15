@@ -30,6 +30,13 @@ public class Group {
     public Group() {
     }
 
+    public Group(Long id, String code, GroupCategory category, User curator) {
+        this.id = id;
+        this.code = code;
+        this.category = category;
+        this.curator = curator;
+    }
+
     public Group(String code, GroupCategory category, User curator) {
         this.code = code;
         this.category = category;

@@ -15,6 +15,11 @@ public class GroupCategory {
     public GroupCategory() {
     }
 
+    public GroupCategory(Long id, String name) {
+        this.id = id;
+        this.name = name;
+    }
+
     public GroupCategory(String name) {
         this.name = name;
     }
